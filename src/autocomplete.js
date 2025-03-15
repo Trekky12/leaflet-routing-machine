@@ -200,23 +200,26 @@
 
 		_complete: function(completeFn, trySelect) {
 			var v = this._elem.value;
-			function completeResults(results) {
+			var completeResults = function(results) {
 				this._lastCompletedText = v;
 				if (trySelect && results.length === 1) {
 					this._resultSelected(results[0])();
 				} else {
 					this._setResults(results);
 				}
-			}
+			}.bind(this);
 
 			if (!v) {
 				return;
 			}
 
 			if (v !== this._lastCompletedText) {
-				completeFn(v, completeResults, this);
+				var result = completeFn(v, completeResults, this);
+				if (result && typeof result.then === 'function') {
+					result.then(completeResults);
+				}
 			} else if (trySelect) {
-				completeResults.call(this, this._results);
+				completeResults(this._results);
 			}
 		}
 	});
